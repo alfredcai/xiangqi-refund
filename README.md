@@ -1,7 +1,7 @@
 # xiangqi-refund
 辣鸡享骑，每天要登记才能退款
 
-###运行
+### 运行
 下载selenuim 的 chromedriver，http://chromedriver.chromium.org/downloads
 
 改变 xiangqi_refund_selenium.py 文件中的CHROME_DRIVER_PATH的值，指向下载的 chromedriver 所在位置
