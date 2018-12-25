@@ -8,14 +8,14 @@ from selenium import webdriver
 
 HOST = "http://gis1z4xshb2s37ki.mikecrm.com"
 USER_AGENT = "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36 MicroMessenger/6.0.0.54_r849063.501 NetType/WIFI"
-# CHROME_DRIVER_PATH = "/Users/alfredcai/Downloads/" + "chromedriver"
-CHROME_DRIVER_PATH = "/root/xiangqi/" + "chromedriver"
+CHROME_DRIVER_PATH = "/Users/alfredcai/Downloads/" + "chromedriver"
+# CHROME_DRIVER_PATH = "/root/xiangqi/" + "chromedriver"
 
 fmt = "%(asctime)-15s %(levelname)s %(filename)s %(lineno)d %(process)d %(message)s"
 datefmt = "%a %d %b %Y %H:%M:%S"
 
 logging.basicConfig(
-    filename='/root/xiangqi/log/logger.log',
+    filename='./logger.log',
     level=logging.INFO,
     format=fmt,
     datefmt=datefmt)
@@ -44,21 +44,27 @@ def do_chrome_submit(username, mobile):
     logging.info("submit button click")
 
     check_chrome_submit_result(client)
+    client.quit()
 
 
 def get_web_form(client, url):
     client.get(url)
-    inputs = client.find_elements_by_tag_name("input")
-    name_input = inputs[0]
-    mobile_input = inputs[1]
-    submit_button = client.find_element_by_id("form_submit")
+    try:
+        inputs = client.find_elements_by_tag_name("input")
+        name_input = inputs[0]
+        mobile_input = inputs[1]
+        submit_button = client.find_element_by_id("form_submit")
+    except Exception as e:
+        logging.error(e)
+        client.quit()
+        sys.exit()
     return mobile_input, name_input, submit_button
 
 
 def get_chrome_options():
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument("--user-agent=" + USER_AGENT)
