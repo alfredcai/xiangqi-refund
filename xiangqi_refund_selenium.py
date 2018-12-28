@@ -7,18 +7,6 @@ import time
 from selenium import webdriver
 
 HOST = "http://gis1z4xshb2s37ki.mikecrm.com"
-USER_AGENT = "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36 MicroMessenger/6.0.0.54_r849063.501 NetType/WIFI"
-CHROME_DRIVER_PATH = "/Users/alfredcai/Downloads/" + "chromedriver"
-# CHROME_DRIVER_PATH = "/root/xiangqi/" + "chromedriver"
-
-fmt = "%(asctime)-15s %(levelname)s %(filename)s %(lineno)d %(process)d %(message)s"
-datefmt = "%a %d %b %Y %H:%M:%S"
-
-logging.basicConfig(
-    filename='./logger.log',
-    level=logging.INFO,
-    format=fmt,
-    datefmt=datefmt)
 
 
 def do_request(username, mobile):
@@ -33,7 +21,7 @@ def do_chrome_submit(username, mobile):
     client = webdriver.Chrome(
         chrome_options=options, executable_path=CHROME_DRIVER_PATH)
 
-    path = "/dcSGLtc"
+    path = "/JI5p0O4"
     url = HOST + path
 
     mobile_input, name_input, submit_button = get_web_form(client, url)
@@ -41,7 +29,7 @@ def do_chrome_submit(username, mobile):
     name_input.send_keys(username)
     mobile_input.send_keys(mobile)
     submit_button.click()
-    logging.info("submit button click")
+    logging.info("submit button click with username:%s, mobile:%s" % (username, mobile))
 
     check_chrome_submit_result(client)
     client.quit()
@@ -56,12 +44,15 @@ def get_web_form(client, url):
         submit_button = client.find_element_by_id("form_submit")
     except Exception as e:
         logging.error(e)
+        logging.error("can't find web page's elements, pls check the page url")
         client.quit()
         sys.exit()
     return mobile_input, name_input, submit_button
 
 
 def get_chrome_options():
+    USER_AGENT = "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36 MicroMessenger/6.0.0.54_r849063.501 NetType/WIFI"
+
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     # options.add_argument('--headless')
@@ -88,7 +79,29 @@ def check_chrome_submit_result(client):
         logging.WARNING("submit failed")
 
 
+def get_file_path():
+    system = sys.platform
+    return {
+        "darwin": ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver", "./logger.log"),
+        "linux": ("/root/xiangqi/chromedriver", "/root/xiangqi/log/xiangqi.log")
+    }.get(system, ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver", "./logger.log"))
+
+
+def set_logging_config(log_file_path):
+    fmt = "%(asctime)-15s %(levelname)s %(filename)s %(lineno)d %(process)d %(message)s"
+    datefmt = "%a %d %b %Y %H:%M:%S"
+
+    logging.basicConfig(
+        filename=log_file_path,
+        level=logging.INFO,
+        format=fmt,
+        datefmt=datefmt)
+
+
 if __name__ == '__main__':
+    CHROME_DRIVER_PATH, LOGGER_FILE_PATH = get_file_path()
+    set_logging_config(LOGGER_FILE_PATH)
+
     logging.info("args lens: %d" % len(sys.argv))
     arg_username = str(sys.argv[1])
     arg_mobile = str(sys.argv[2])
