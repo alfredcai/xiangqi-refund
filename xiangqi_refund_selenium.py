@@ -55,7 +55,7 @@ def get_chrome_options():
 
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
-    # options.add_argument('--headless')
+    options.add_argument('--headless')
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument("--user-agent=" + USER_AGENT)
@@ -83,30 +83,40 @@ def get_file_path():
     system = sys.platform
     logging.info("system platform is " + system)
     return {
-        "darwin": ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver", "./logger.log"),
+        "darwin": ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver",
+                   "./logger.log"),
         "linux": ("/root/xiangqi/chromedriver", "/root/xiangqi/log/xiangqi.log")
-    }.get(system, ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver", "./logger.log"))
+    }.get(system, ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver",
+                   "./logger.log"))
 
 
 def set_logging_config(log_file_path):
     fmt = "%(asctime)-15s %(levelname)s %(filename)s %(lineno)d %(process)d %(message)s"
     datefmt = "%a %d %b %Y %H:%M:%S"
 
+    logging.root.handlers = []
     logging.basicConfig(
         filename=log_file_path,
         level=logging.INFO,
         format=fmt,
         datefmt=datefmt)
 
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(logging.Formatter(fmt=fmt,datefmt=datefmt))
+    logging.getLogger("").addHandler(console)
+
 
 if __name__ == '__main__':
     CHROME_DRIVER_PATH, LOGGER_FILE_PATH = get_file_path()
     set_logging_config(LOGGER_FILE_PATH)
+    logging.info("chrome driver path:%s" % CHROME_DRIVER_PATH)
+    logging.info("logging file locale at:%s" % LOGGER_FILE_PATH)
 
-    logging.info("args lens: %d" % len(sys.argv))
     arg_username = str(sys.argv[1])
     arg_mobile = str(sys.argv[2])
 
+    logging.info("args lens: %d" % len(sys.argv))
     logging.info("args username: %s, mobile: %s" % (arg_username, arg_mobile))
     logging.info("do request at %s" % str(
         datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
