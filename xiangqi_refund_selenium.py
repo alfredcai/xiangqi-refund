@@ -81,6 +81,7 @@ def check_chrome_submit_result(client):
 
 def get_file_path():
     system = sys.platform
+    logging.info("system platform is " + system)
     return {
         "darwin": ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver", "./logger.log"),
         "linux": ("/root/xiangqi/chromedriver", "/root/xiangqi/log/xiangqi.log")
