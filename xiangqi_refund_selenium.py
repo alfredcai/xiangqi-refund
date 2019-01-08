@@ -6,16 +6,27 @@ from datetime import datetime
 
 from selenium import webdriver
 
-HOST = "http://gis1z4xshb2s37ki.mikecrm.com"
+url = "http://gis1z4xshb2s37ki.mikecrm.com/JI5p0O4"
 
 
 def do_request(username, mobile, time="09:00:00"):
+    options = get_chrome_options()
+
+    client = webdriver.Chrome(options=options, executable_path=CHROME_DRIVER_PATH)
+
+    try:
+        do_test(client)
+    except Exception as e:
+        logging.error(e)
+
     while True:
         if check_request_time(time):
             logging.info("starting form at %s with username:%s, mobile:%s" % (
                 str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), username, mobile))
-            do_chrome_submit(username, mobile)
+            do_chrome_submit(client, username, mobile)
             return 0
+
+    client.quit()
 
 
 def check_request_time(time="9:00:00"):
@@ -28,16 +39,8 @@ def check_request_time(time="9:00:00"):
     return now > settled_time
 
 
-def do_chrome_submit(username, mobile):
-    options = get_chrome_options()
-
-    client = webdriver.Chrome(
-        chrome_options=options, executable_path=CHROME_DRIVER_PATH)
-
-    path = "/JI5p0O4"
-    url = HOST + path
-
-    mobile_input, name_input, submit_button = get_web_form(client, url)
+def do_chrome_submit(client, username, mobile):
+    mobile_input, name_input, submit_button = get_web_form(client)
 
     name_input.send_keys(username)
     mobile_input.send_keys(mobile)
@@ -47,10 +50,9 @@ def do_chrome_submit(username, mobile):
         % (username, mobile))
 
     check_chrome_submit_result(client)
-    client.quit()
 
 
-def get_web_form(client, url):
+def get_web_form(client):
     client.get(url)
     try:
         inputs = client.find_elements_by_tag_name("input")
@@ -68,14 +70,15 @@ def get_web_form(client, url):
 
 
 def get_chrome_options():
-    USER_AGENT = "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36 MicroMessenger/6.0.0.54_r849063.501 NetType/WIFI"
+    user_agent = "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) " \
+                 "Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36 MicroMessenger/6.0.0.54_r849063.501 NetType/WIFI "
 
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--headless')
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
-    options.add_argument("--user-agent=" + USER_AGENT)
+    options.add_argument("--user-agent=" + user_agent)
     return options
 
 
@@ -126,6 +129,13 @@ def set_logging_config(log_file_path):
     logging.getLogger("").addHandler(console)
 
 
+def do_test(client):
+    client.get(url)
+    assert client.title == '诚信金退款申请登记', "test request page title is incorrect"
+    client.close()
+    logging.info("test request page is success")
+
+
 if __name__ == '__main__':
     CHROME_DRIVER_PATH, LOGGER_FILE_PATH = get_file_path()
     set_logging_config(LOGGER_FILE_PATH)
@@ -138,7 +148,7 @@ if __name__ == '__main__':
         arg_mobile = str(sys.argv[2])
         arg_request_time = str(sys.argv[3])
     except IndexError as e:
-        logging.error(e)
+        logging.error("input args are incorrect")
         sys.exit(0)
 
     logging.info("args lens:%d, detail:%s" % (len(sys.argv), sys.argv))
