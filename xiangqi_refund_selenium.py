@@ -132,7 +132,6 @@ def set_logging_config(log_file_path):
 def do_test(client):
     client.get(url)
     assert client.title == '诚信金退款申请登记', "test request page title is incorrect"
-    client.close()
     logging.info("test request page is success")
 
 
