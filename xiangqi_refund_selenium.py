@@ -7,7 +7,7 @@ from datetime import datetime
 from selenium import webdriver
 
 url = "http://gis1z4xshb2s37ki.mikecrm.com/JI5p0O4"
-submit_count_max = 2
+submit_count_max = 100
 
 
 def do_request(username, mobile, time="09:00:00"):
@@ -63,7 +63,7 @@ def get_web_form(client):
         mobile_input = inputs[1]
         submit_button = client.find_element_by_id("form_submit")
 
-        logging.info("get name,mobile input and submit button")
+        logging.debug("get name,mobile input and submit button")
     except Exception as e:
         logging.error(e)
         logging.error("can't find web page's elements, pls check the page url")
@@ -96,8 +96,7 @@ def get_chrome_options():
 
 
 def check_chrome_submit_result(client):
-    logging.info("check ing submit result %s" % str(
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    logging.info("checking submit result")
     time.sleep(5)
     try:
         result = client.find_element_by_xpath(
@@ -114,7 +113,7 @@ def check_chrome_submit_result(client):
 
 def get_file_path():
     system = sys.platform
-    logging.info("system platform is " + system)
+    logging.debug("system platform is " + system)
     config_dir = {
         "darwin":
             ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver",
@@ -132,7 +131,7 @@ def set_logging_config(log_file_path):
     logging.root.handlers = []
     logging.basicConfig(
         filename=log_file_path,
-        level=logging.INFO,
+        level=logging.DEBUG,
         format=fmt,
         datefmt=datefmt)
 
@@ -152,8 +151,8 @@ if __name__ == '__main__':
     CHROME_DRIVER_PATH, LOGGER_FILE_PATH = get_file_path()
     set_logging_config(LOGGER_FILE_PATH)
 
-    logging.info("chrome driver path:%s" % CHROME_DRIVER_PATH)
-    logging.info("logging file locale at:%s" % LOGGER_FILE_PATH)
+    logging.debug("chrome driver path:%s" % CHROME_DRIVER_PATH)
+    logging.debug("logging file locale at:%s" % LOGGER_FILE_PATH)
 
     try:
         arg_username = str(sys.argv[1])
