@@ -7,6 +7,7 @@ from datetime import datetime
 from selenium import webdriver
 
 url = "http://gis1z4xshb2s37ki.mikecrm.com/JI5p0O4"
+submit_count_max = 2
 
 
 def do_request(username, mobile, time="09:00:00"):
@@ -19,12 +20,14 @@ def do_request(username, mobile, time="09:00:00"):
     except Exception as e:
         logging.error(e)
 
+    submit_count = 0
     while True:
         if check_request_time(time):
-            logging.info("starting form at %s with username:%s, mobile:%s" % (
-                str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), username, mobile))
+            logging.info("starting submit form with username:%s, mobile:%s" % (username, mobile))
             do_chrome_submit(client, username, mobile)
-            return 0
+            submit_count = submit_count + 1
+            if submit_count >= submit_count_max:
+                return 0
 
     client.quit()
 
@@ -64,9 +67,19 @@ def get_web_form(client):
     except Exception as e:
         logging.error(e)
         logging.error("can't find web page's elements, pls check the page url")
+        try_find_page_error_info(client)
         client.quit()
         sys.exit()
     return mobile_input, name_input, submit_button
+
+
+def try_find_page_error_info(client):
+    try:
+        form_list = client.find_elements_by_tag_name("form")
+        for f in form_list:
+            logging.error(f.text)
+    except Exception:
+        pass
 
 
 def get_chrome_options():
