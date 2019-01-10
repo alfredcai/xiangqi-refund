@@ -6,7 +6,8 @@ from datetime import datetime
 
 from selenium import webdriver
 
-url = "http://gis1z4xshb2s37ki.mikecrm.com/JI5p0O4"
+# url = "http://gis1z4xshb2s37ki.mikecrm.com/JI5p0O4"
+url = "http://gis1z4xshb2s37ki.mikecrm.com/dRWXuZW"
 submit_count_max = 100
 
 
@@ -75,6 +76,10 @@ def get_web_form(client):
 
 def try_find_page_error_info(client):
     try:
+        body = client.find_elements_by_tag_name("body")
+        for b in body:
+            logging.debug(b.text)
+
         form_list = client.find_elements_by_tag_name("form")
         for f in form_list:
             logging.error(f.text)
@@ -136,7 +141,7 @@ def set_logging_config(log_file_path):
         datefmt=datefmt)
 
     console = logging.StreamHandler()
-    console.setLevel(logging.DEBUG)
+    console.setLevel(logging.INFO)
     console.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
     logging.getLogger("").addHandler(console)
 
