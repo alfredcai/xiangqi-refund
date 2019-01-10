@@ -78,11 +78,11 @@ def try_find_page_error_info(client):
     try:
         body = client.find_elements_by_tag_name("body")
         for b in body:
-            logging.debug(b.text)
+            logging.debug(b.text.repalce("\n", " "))
 
         form_list = client.find_elements_by_tag_name("form")
         for f in form_list:
-            logging.error(f.text)
+            logging.error(f.text.repalce("\n", " "))
     except Exception:
         pass
 
@@ -108,11 +108,23 @@ def check_chrome_submit_result(client):
             u"//html/body/form/div/div[1]/div[2]/div/div[2]/div[1]").text
     except Exception as e:
         logging.error(e)
+        result = ""
+
+    try:
+        body = client.find_elements_by_tag_name("body")
+    except Exception as e:
+        logging.error(e)
+        body = []
+
+    if not result:
+        for i in body:
+            str = i.text.replace("\r", " ")
+            result += str.replace("\n", " ")
 
     if result:
-        logging.info("******************* submit result:" + result)
+        logging.info("******************* submit result:%s" % result)
     else:
-        logging.warning("******************* submit result:" + result)
+        logging.warning("******************* submit result:%s" % result)
         logging.WARNING("******************* submit failed")
 
 
