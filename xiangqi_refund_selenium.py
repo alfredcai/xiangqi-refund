@@ -12,9 +12,7 @@ submit_count_max = 100
 
 
 def do_request(username, mobile, time="09:00:00"):
-    options = get_chrome_options()
-
-    client = webdriver.Chrome(options=options, executable_path=CHROME_DRIVER_PATH)
+    client = restart_client()
 
     try:
         do_test(client)
@@ -27,10 +25,19 @@ def do_request(username, mobile, time="09:00:00"):
             logging.info("starting submit form with username:%s, mobile:%s" % (username, mobile))
             do_chrome_submit(client, username, mobile)
             submit_count = submit_count + 1
+            client = restart_client(client)
             if submit_count >= submit_count_max:
                 return 0
 
-    client.quit()
+    client.close()
+
+
+def restart_client(client=None):
+    if client:
+        client.close()
+    options = get_chrome_options()
+    client = webdriver.Chrome(options=options, executable_path=CHROME_DRIVER_PATH)
+    return client
 
 
 def check_request_time(time="9:00:00"):
@@ -69,7 +76,7 @@ def get_web_form(client):
         logging.error(e)
         logging.error("can't find web page's elements, pls check the page url")
         try_find_page_error_info(client)
-        client.quit()
+        client.close()
         sys.exit()
     return mobile_input, name_input, submit_button
 
