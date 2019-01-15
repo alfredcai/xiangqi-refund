@@ -7,7 +7,8 @@ from datetime import datetime
 from selenium import webdriver
 
 # url = "http://gis1z4xshb2s37ki.mikecrm.com/JI5p0O4"
-url = "http://gis1z4xshb2s37ki.mikecrm.com/dRWXuZW"
+# url = "http://gis1z4xshb2s37ki.mikecrm.com/dRWXuZW"
+url = "http://gis1z4xshb2s37ki.mikecrm.com/OceMOu5"
 submit_count_max = 100
 
 
@@ -19,16 +20,21 @@ def do_request(username, mobile, time="09:00:00"):
     except Exception as e:
         logging.error(e)
 
-    submit_count = 0
+    submit_count, error_count = 0, 0
     while True:
         if check_request_time(time):
-            logging.info("starting submit form with username:%s, mobile:%s" % (username, mobile))
-            do_chrome_submit(client, username, mobile)
-            submit_count = submit_count + 1
+            logging.info("Starting submit form with username:%s, mobile:%s" % (username, mobile))
+            try:
+                do_chrome_submit(client, username, mobile)
+                submit_count = submit_count + 1
+                if submit_count >= submit_count_max:
+                    return 0
+            except Exception as e:
+                error_count += 1
+                logging.error(e)
+                if error_count >= 5:
+                    return 0
             client = restart_client(client)
-            if submit_count >= submit_count_max:
-                return 0
-
     client.close()
 
 
@@ -56,9 +62,7 @@ def do_chrome_submit(client, username, mobile):
     name_input.send_keys(username)
     mobile_input.send_keys(mobile)
     submit_button.click()
-    logging.info(
-        "########################  submit button click with username:%s, mobile:%s"
-        % (username, mobile))
+    logging.info("Submit button click with username:%s, mobile:%s" % (username, mobile))
 
     check_chrome_submit_result(client)
 
@@ -73,11 +77,9 @@ def get_web_form(client):
 
         logging.debug("get name,mobile input and submit button")
     except Exception as e:
-        logging.error(e)
         logging.error("can't find web page's elements, pls check the page url")
         try_find_page_error_info(client)
-        client.close()
-        sys.exit()
+        raise e
     return mobile_input, name_input, submit_button
 
 
@@ -108,7 +110,7 @@ def get_chrome_options():
 
 
 def check_chrome_submit_result(client):
-    logging.info("checking submit result")
+    logging.info("Checking submit result")
     time.sleep(5)
     try:
         result = client.find_element_by_xpath(
@@ -129,10 +131,10 @@ def check_chrome_submit_result(client):
             result += str.replace("\n", " ")
 
     if result:
-        logging.info("******************* submit result:%s" % result)
+        logging.info("Submit result:%s" % result)
     else:
-        logging.warning("******************* submit result:%s" % result)
-        logging.WARNING("******************* submit failed")
+        logging.warning("Submit result:%s" % result)
+        logging.warning("Submit failed")
 
 
 def get_file_path():
@@ -162,21 +164,27 @@ def set_logging_config(log_file_path):
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     console.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
+
+    info_level_file = logging.FileHandler(filename=log_file_path.replace(".log", "_info.log"))
+    info_level_file.setLevel(logging.INFO)
+    info_level_file.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
+
     logging.getLogger("").addHandler(console)
+    logging.getLogger("").addHandler(info_level_file)
 
 
 def do_test(client):
     client.get(url)
     assert client.title == '诚信金退款申请登记', "test request page title is incorrect"
-    logging.info("test request page is success")
+    logging.info("Test request page is success")
 
 
 if __name__ == '__main__':
     CHROME_DRIVER_PATH, LOGGER_FILE_PATH = get_file_path()
     set_logging_config(LOGGER_FILE_PATH)
 
-    logging.debug("chrome driver path:%s" % CHROME_DRIVER_PATH)
-    logging.debug("logging file locale at:%s" % LOGGER_FILE_PATH)
+    logging.debug("Chrome driver path:%s" % CHROME_DRIVER_PATH)
+    logging.debug("Logging file locale at:%s" % LOGGER_FILE_PATH)
 
     try:
         arg_username = str(sys.argv[1])
