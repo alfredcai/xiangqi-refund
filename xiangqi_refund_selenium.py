@@ -8,8 +8,11 @@ from selenium import webdriver
 
 # url = "http://gis1z4xshb2s37ki.mikecrm.com/JI5p0O4"
 # url = "http://gis1z4xshb2s37ki.mikecrm.com/dRWXuZW"
-url = "http://gis1z4xshb2s37ki.mikecrm.com/OceMOu5"
-submit_count_max = 100
+# url = "http://gis1z4xshb2s37ki.mikecrm.com/OceMOu5"
+# url = "http://gis1z4xshb2s37ki.mikecrm.com/4qhdO2B"
+url = "http://gis1z4xshb2s37ki.mikecrm.com/01irI6d"
+form_password = "xq123456"
+submit_count_max = 10
 
 
 def do_request(username, mobile, time="09:00:00"):
@@ -23,7 +26,8 @@ def do_request(username, mobile, time="09:00:00"):
     submit_count, error_count = 0, 0
     while True:
         if check_request_time(time):
-            logging.info("Starting submit form with username:%s, mobile:%s" % (username, mobile))
+            logging.info(
+                "Starting submit form in %d times with username:%s, mobile:%s" % (submit_count, username, mobile))
             try:
                 do_chrome_submit(client, username, mobile)
                 submit_count = submit_count + 1
@@ -57,30 +61,41 @@ def check_request_time(time="9:00:00"):
 
 
 def do_chrome_submit(client, username, mobile):
-    mobile_input, name_input, submit_button = get_web_form(client)
-
-    name_input.send_keys(username)
-    mobile_input.send_keys(mobile)
-    submit_button.click()
-    logging.info("Submit button click with username:%s, mobile:%s" % (username, mobile))
-
+    client.get(url)
+    submit_enter_password(client)
+    submit_form(client, username, mobile)
     check_chrome_submit_result(client)
 
 
-def get_web_form(client):
-    client.get(url)
+def submit_enter_password(client):
+    try:
+        inputs = client.find_elements_by_tag_name("input")
+        name_input = inputs[0]
+        submit_button = client.find_element_by_class_name("fbc_button")
+        name_input.send_keys(form_password)
+        submit_button.click()
+    except Exception as e:
+        logging.error("Entering form error,password:%s" % form_password)
+        raise e
+
+
+def submit_form(client, username, mobile):
     try:
         inputs = client.find_elements_by_tag_name("input")
         name_input = inputs[0]
         mobile_input = inputs[1]
         submit_button = client.find_element_by_id("form_submit")
 
-        logging.debug("get name,mobile input and submit button")
+        logging.debug("Get name,mobile input and submit button")
+
+        name_input.send_keys(username)
+        mobile_input.send_keys(mobile)
+        submit_button.click()
+        logging.debug("Submit button click with username:%s, mobile:%s" % (username, mobile))
     except Exception as e:
-        logging.error("can't find web page's elements, pls check the page url")
+        logging.error("Can't find web page's elements, pls check the page url")
         try_find_page_error_info(client)
         raise e
-    return mobile_input, name_input, submit_button
 
 
 def try_find_page_error_info(client):
@@ -93,7 +108,7 @@ def try_find_page_error_info(client):
         for f in form_list:
             logging.error(f.text.repalce("\n", " "))
     except Exception:
-        pass
+        logging.error("Unexpected error")
 
 
 def get_chrome_options():
@@ -102,10 +117,13 @@ def get_chrome_options():
 
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument("--user-agent=" + user_agent)
+
+    prefs = {'profile.default_content_setting_values': {'images': 2}}
+    options.add_experimental_option('prefs', prefs)
     return options
 
 
@@ -133,8 +151,7 @@ def check_chrome_submit_result(client):
     if result:
         logging.info("Submit result:%s" % result)
     else:
-        logging.warning("Submit result:%s" % result)
-        logging.warning("Submit failed")
+        logging.error("Failed submit, page result: %s" % result)
 
 
 def get_file_path():
