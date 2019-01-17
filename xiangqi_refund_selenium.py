@@ -27,7 +27,7 @@ def do_request(username, mobile, time="09:00:00"):
     while True:
         if check_request_time(time):
             logging.info(
-                "Starting submit form in %d times with username:%s, mobile:%s" % (submit_count, username, mobile))
+                "Starting submit form in %d times with username:%s, mobile:%s" % (submit_count + 1, username, mobile))
             try:
                 do_chrome_submit(client, username, mobile)
                 submit_count = submit_count + 1
@@ -35,7 +35,7 @@ def do_request(username, mobile, time="09:00:00"):
                     return 0
             except Exception as e:
                 error_count += 1
-                logging.error(e)
+                logging.error("Failed submit form in %d times" % error_count)
                 if error_count >= 5:
                     return 0
             client = restart_client(client)
@@ -63,6 +63,7 @@ def check_request_time(time="9:00:00"):
 def do_chrome_submit(client, username, mobile):
     client.get(url)
     submit_enter_password(client)
+    time.sleep(1)
     submit_form(client, username, mobile)
     check_chrome_submit_result(client)
 
@@ -74,6 +75,7 @@ def submit_enter_password(client):
         submit_button = client.find_element_by_class_name("fbc_button")
         name_input.send_keys(form_password)
         submit_button.click()
+        logging.debug("Succeed enter into the form")
     except Exception as e:
         logging.error("Entering form error,password:%s" % form_password)
         raise e
@@ -117,7 +119,7 @@ def get_chrome_options():
 
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
-    # options.add_argument('--headless')
+    options.add_argument('--headless')
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument("--user-agent=" + user_agent)
@@ -131,8 +133,7 @@ def check_chrome_submit_result(client):
     logging.info("Checking submit result")
     time.sleep(5)
     try:
-        result = client.find_element_by_xpath(
-            u"//html/body/form/div/div[1]/div[2]/div/div[2]/div[1]").text
+        result = client.find_element_by_xpath(u"//html/body/form/div/div[1]/div[2]/div/div[2]/div[1]").text
     except Exception as e:
         logging.error(e)
         result = ""
