@@ -10,12 +10,12 @@ from selenium import webdriver
 # url = "http://gis1z4xshb2s37ki.mikecrm.com/dRWXuZW"
 # url = "http://gis1z4xshb2s37ki.mikecrm.com/OceMOu5"
 # url = "http://gis1z4xshb2s37ki.mikecrm.com/4qhdO2B"
-url = "http://gis1z4xshb2s37ki.mikecrm.com/01irI6d"
+url = "http://gis1z4xshb2s37ki.mikecrm.com/a137fLV"
 form_password = "xq123456"
 submit_count_max = 10
 
 
-def do_request(username, mobile, time="09:00:00"):
+def do_request(username, mobile, time):
     client = restart_client()
 
     try:
@@ -39,18 +39,18 @@ def do_request(username, mobile, time="09:00:00"):
                 if error_count >= 5:
                     return 0
             client = restart_client(client)
-    client.close()
+    client.quit()
 
 
 def restart_client(client=None):
-    if client:
+    if client is not None:
         client.close()
     options = get_chrome_options()
     client = webdriver.Chrome(options=options, executable_path=CHROME_DRIVER_PATH)
     return client
 
 
-def check_request_time(time="9:00:00"):
+def check_request_time(time):
     now = datetime.now()
     settled_time = datetime.strptime(time, "%H:%M:%S")
     settled_time = now.replace(hour=settled_time.time().hour,
@@ -62,8 +62,8 @@ def check_request_time(time="9:00:00"):
 
 def do_chrome_submit(client, username, mobile):
     client.get(url)
-    submit_enter_password(client)
-    time.sleep(1)
+    # submit_enter_password(client)
+    # time.sleep(1)
     submit_form(client, username, mobile)
     check_chrome_submit_result(client)
 
@@ -162,8 +162,8 @@ def get_file_path():
         "darwin":
             ("/Users/alfredcai/CodeProjects/ReleasesProgram/selenium/chromedriver",
              "./logger.log"),
-        "linux": ("/root/xiangqi/chromedriver",
-                  "/root/xiangqi/log/xiangqi.log")
+        "linux" : ("/root/xiangqi/chromedriver",
+                   "/root/xiangqi/log/xiangqi.log")
     }
     return config_dir.get(system, config_dir.get("darwin"))
 
