@@ -12,7 +12,7 @@ from selenium import webdriver
 # url = "http://gis1z4xshb2s37ki.mikecrm.com/4qhdO2B"
 url = "http://gis1z4xshb2s37ki.mikecrm.com/a137fLV"
 form_password = "xq123456"
-submit_count_max = 10
+submit_count_max = 1000
 
 
 def do_request(username, mobile, time):
@@ -31,13 +31,14 @@ def do_request(username, mobile, time):
             try:
                 do_chrome_submit(client, username, mobile)
                 submit_count = submit_count + 1
+                error_count = 0
                 if submit_count >= submit_count_max:
-                    return 0
+                    break
             except Exception as e:
                 error_count += 1
                 logging.error("Failed submit form in %d times" % error_count)
                 if error_count >= 5:
-                    return 0
+                    break
             client = restart_client(client)
     client.quit()
 
