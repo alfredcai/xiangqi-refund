@@ -1,5 +1,6 @@
 # xiangqi-refund
 辣鸡享骑，每天要登记才能退款
+享骑倒闭了，大家散了吧。
 
 ### 运行
 下载selenuim 的 chromedriver，http://chromedriver.chromium.org/downloads
